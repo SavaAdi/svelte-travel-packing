@@ -1,6 +1,7 @@
 <script>
   import Item from "./Item.svelte";
   import { getGuid, blurOnKey, sortOnName } from "./util";
+  import { createEventDispatcher } from "svelte";
 
   export let categories;
   export let category;
@@ -11,12 +12,19 @@
   let items = [];
 
   let message = "";
+  const dispatch = createEventDispatcher();
 
   $: items = Object.values(category.items);
   $: remaining = items.filter((item) => !item.packed).length;
   $: total = items.length;
   $: status = `${remaining} of ${total} remaining`;
   $: itemsToShow = sortOnName(items.filter((i) => shouldShow(show, i)));
+
+  function deleteItem(item) {
+    //special delete operator for arrays
+    delete category.items[item.id];
+    category = category;
+  }
 
   function addItem() {
     const duplicate = Object.values(categories).some((cat) =>
@@ -58,7 +66,7 @@
     {/if}
 
     <span class="status">{status}</span>
-    <button class="icon">&#x1F5D1;</button>
+    <button class="icon" on:click={() => dispatch('delete')}>&#x1F5D1;</button>
   </h3>
 
   <form on:submit|preventDefault={addItem}>
@@ -74,7 +82,7 @@
       <!-- This bind causes the category object to update
 when the item packed value is toggled. -->
       <!-- This is equivalent to <Item bind:item={item} />. -->
-      <Item bind:item /> 
+      <Item bind:item on:delete={() => deleteItem(item)} />
     {:else}
       <div>This category does not contain any items yet.</div>
     {/each}

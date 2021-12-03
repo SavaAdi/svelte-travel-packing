@@ -1,6 +1,7 @@
 <script>
   import Category from "./Category.svelte";
   import { getGuid, sortOnName } from "./util";
+  import { createEventDispatcher } from "svelte";
 
   let categoryArray = [];
   let categories = {};
@@ -8,7 +9,14 @@
   let message = "";
   let show = "all";
 
+  const dispatch = createEventDispatcher();
+
   $: categoryArray = sortOnName(Object.values(categories));
+
+  function deleteCategory(category) {
+    delete categories[category.id];
+    categories = categories;
+  }
 
   function addCategory() {
     const duplicate = Object.values(categories).some(
@@ -47,7 +55,7 @@
         <input bind:value={categoryName} />
       </label>
       <button disabled={!categoryName}>Add Category</button>
-      
+
       <button class="logout-btn"> Log Out </button>
     </form>
     <p>
@@ -58,7 +66,7 @@
     <div class="radios">
       <label>Show</label>
       <label>
-          <!-- Using bind:group
+        <!-- Using bind:group
             with a set of related
             radio buttons
             makes the value a
@@ -79,7 +87,7 @@
   </header>
   <div class="categories">
     {#each categoryArray as category (category.id)}
-      <Category bind:category {categories} {show} />
+      <Category bind:category {categories} {show} on:delete={() => deleteCategory(category)}/>
     {/each}
   </div>
 </section>
